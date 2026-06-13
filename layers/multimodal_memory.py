@@ -233,7 +233,7 @@ def compute_cluster_centroids(features, labels):
     num_classes = len(labels.unique()) - 1 if -1 in labels else len(labels.unique())
     centers = torch.zeros((num_classes, features.shape[1]), dtype=torch.float32, device=features.device)
     for i in range(num_classes):
-        idx = torch.where(labels == i)[0]
+        idx = torch.where(labels == i)[0].to(features.device)
         temp = features[idx, :]
         if len(temp.shape) == 1:
             temp = temp.reshape(1, -1)
