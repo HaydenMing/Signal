@@ -46,13 +46,18 @@ class DINOv3Encoder(nn.Module):
         super().__init__()
 
         # Load DINOv3 backbone
-        self.backbone = load_dinov3_vitb16(pretrained=(pretrained_path is None))
-
-        # If user provides a local path, load from it
-        if pretrained_path is not None and os.path.exists(pretrained_path):
+        if pretrained_path is None or pretrained_path == '':
+            # No local path → download official pretrained weights
+            self.backbone = load_dinov3_vitb16(pretrained=True)
+            print('Loading DINOv3 from official pretrained URL')
+        elif os.path.exists(pretrained_path):
+            # Local .pth file provided
+            self.backbone = load_dinov3_vitb16(pretrained=False)
             state_dict = torch.load(pretrained_path, map_location='cpu')
             self.backbone.load_state_dict(state_dict, strict=True)
             print(f'Loaded DINOv3 from local path: {pretrained_path}')
+        else:
+            raise FileNotFoundError(f'DINOv3 pretrained path not found: {pretrained_path}')
 
         self.embed_dim = 768  # ViT-B/16
         self.backbone.eval()
