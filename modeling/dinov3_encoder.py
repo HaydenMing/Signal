@@ -31,17 +31,24 @@ def _remap_hf_to_fb(hf_state_dict):
     fb_dict = {}
     n_layers = 12
 
-    # ---- token-level keys (HF has extra dim, FB uses 2D) ----
-    for hf_k, fb_k, squeeze_dim in [
-        ('embeddings.cls_token', 'cls_token', True),
-        ('embeddings.mask_token', 'mask_token', True),
-        ('embeddings.register_tokens', 'storage_tokens', False),
-        ('embeddings.patch_embeddings.weight', 'patch_embed.proj.weight', False),
-        ('embeddings.patch_embeddings.bias', 'patch_embed.proj.bias', False),
+    # ---- token-level keys ----
+    # cls_token:  HF [1, 768]      → FB [1, 1, 768]   (unsqueeze)
+    # mask_token: HF [1, 1, 768]   → FB [1, 768]       (squeeze)
+    # storage:    HF [1, 4, 768]   → FB [1, 4, 768]    (keep)
+    for hf_k, fb_k, op in [
+        ('embeddings.cls_token', 'cls_token', 'unsqueeze'),
+        ('embeddings.mask_token', 'mask_token', 'squeeze'),
+        ('embeddings.register_tokens', 'storage_tokens', 'keep'),
+        ('embeddings.patch_embeddings.weight', 'patch_embed.proj.weight', 'keep'),
+        ('embeddings.patch_embeddings.bias', 'patch_embed.proj.bias', 'keep'),
     ]:
         val = hf_state_dict.get(hf_k)
         if val is not None:
-            fb_dict[fb_k] = val.squeeze(1) if squeeze_dim and val.dim() == 3 else val
+            if op == 'unsqueeze' and val.dim() == 2:
+                val = val.unsqueeze(1)
+            elif op == 'squeeze' and val.dim() == 3:
+                val = val.squeeze(1)
+            fb_dict[fb_k] = val
 
     # ---- per-layer keys ----
     for i in range(n_layers):
