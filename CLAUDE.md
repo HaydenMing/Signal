@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**IMPORTANT: Always respond in Chinese (Simplified Chinese / 简体中文). All explanations, code comments, commit messages, and interactions must be in Chinese.**
+
 ## Project Overview
 
 **Signal** — multi-modal object ReID framework (AAAI-2026). Works with RGB + Near Infrared (NI) + Thermal Infrared (TI) images. Based on the IDEA research group's multi-modal person/vehicle ReID pipeline.
