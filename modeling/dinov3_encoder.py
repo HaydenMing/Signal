@@ -90,6 +90,11 @@ def _remap_hf_to_fb(hf_state_dict):
             if val is not None:
                 fb_dict[fb_prefix + fb_k] = val
 
+    # ---- final norm (top-level) ----
+    for hf_k in ['norm.weight', 'norm.bias']:
+        if hf_k in hf_state_dict:
+            fb_dict[hf_k] = hf_state_dict[hf_k]
+
     print(f'Remapped {len(fb_dict)} keys from HuggingFace to Facebook format')
     return fb_dict
 
