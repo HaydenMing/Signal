@@ -31,17 +31,17 @@ def _remap_hf_to_fb(hf_state_dict):
     fb_dict = {}
     n_layers = 12
 
-    # ---- token-level keys ----
-    if 'embeddings.cls_token' in hf_state_dict:
-        fb_dict['cls_token'] = hf_state_dict['embeddings.cls_token']
-    if 'embeddings.mask_token' in hf_state_dict:
-        fb_dict['mask_token'] = hf_state_dict['embeddings.mask_token']
-    if 'embeddings.register_tokens' in hf_state_dict:
-        fb_dict['storage_tokens'] = hf_state_dict['embeddings.register_tokens']
-    if 'embeddings.patch_embeddings.weight' in hf_state_dict:
-        fb_dict['patch_embed.proj.weight'] = hf_state_dict['embeddings.patch_embeddings.weight']
-    if 'embeddings.patch_embeddings.bias' in hf_state_dict:
-        fb_dict['patch_embed.proj.bias'] = hf_state_dict['embeddings.patch_embeddings.bias']
+    # ---- token-level keys (HF has extra dim, FB uses 2D) ----
+    for hf_k, fb_k, squeeze_dim in [
+        ('embeddings.cls_token', 'cls_token', True),
+        ('embeddings.mask_token', 'mask_token', True),
+        ('embeddings.register_tokens', 'storage_tokens', False),
+        ('embeddings.patch_embeddings.weight', 'patch_embed.proj.weight', False),
+        ('embeddings.patch_embeddings.bias', 'patch_embed.proj.bias', False),
+    ]:
+        val = hf_state_dict.get(hf_k)
+        if val is not None:
+            fb_dict[fb_k] = val.squeeze(1) if squeeze_dim and val.dim() == 3 else val
 
     # ---- per-layer keys ----
     for i in range(n_layers):
