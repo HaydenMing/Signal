@@ -62,10 +62,13 @@ def _remap_hf_to_fb(hf_state_dict):
         if q_w is not None and k_w is not None and v_w is not None:
             fb_dict[f'{fb_prefix}attn.qkv.weight'] = torch.cat([q_w, k_w, v_w], dim=0)
 
+        # Q, K, V biases → concatenated QKV bias (HF has no k_proj.bias, pad with zeros)
         q_b = hf_state_dict.get(f'{hf_prefix}attention.q_proj.bias')
         k_b = hf_state_dict.get(f'{hf_prefix}attention.k_proj.bias')
         v_b = hf_state_dict.get(f'{hf_prefix}attention.v_proj.bias')
-        if q_b is not None and k_b is not None and v_b is not None:
+        if q_b is not None and v_b is not None:
+            if k_b is None:
+                k_b = torch.zeros_like(q_b)
             fb_dict[f'{fb_prefix}attn.qkv.bias'] = torch.cat([q_b, k_b, v_b], dim=0)
 
         # Output projection
