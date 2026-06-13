@@ -50,12 +50,27 @@ class DINOv3Encoder(nn.Module):
             # No local path → download official pretrained weights
             self.backbone = load_dinov3_vitb16(pretrained=True)
             print('Loading DINOv3 from official pretrained URL')
+        elif os.path.isdir(pretrained_path):
+            # HuggingFace-style directory with model.safetensors
+            from safetensors.torch import load_file
+            sf_path = os.path.join(pretrained_path, 'model.safetensors')
+            if os.path.exists(sf_path):
+                self.backbone = load_dinov3_vitb16(pretrained=False)
+                state_dict = load_file(sf_path)
+                missing, unexpected = self.backbone.load_state_dict(state_dict, strict=False)
+                print(f'Loaded DINOv3 from safetensors: {pretrained_path}')
+                if missing:
+                    print(f'  Missing keys: {missing}')
+                if unexpected:
+                    print(f'  Unexpected keys: {unexpected}')
+            else:
+                raise FileNotFoundError(f'No model.safetensors found in: {pretrained_path}')
         elif os.path.exists(pretrained_path):
-            # Local .pth file provided
+            # Local .pth file
             self.backbone = load_dinov3_vitb16(pretrained=False)
             state_dict = torch.load(pretrained_path, map_location='cpu')
             self.backbone.load_state_dict(state_dict, strict=True)
-            print(f'Loaded DINOv3 from local path: {pretrained_path}')
+            print(f'Loaded DINOv3 from .pth file: {pretrained_path}')
         else:
             raise FileNotFoundError(f'DINOv3 pretrained path not found: {pretrained_path}')
 
