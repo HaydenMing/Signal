@@ -21,6 +21,8 @@ class Signal(nn.Module):
             self.feat_dim = 768
         elif 'ViT-B-16' in cfg.MODEL.TRANSFORMER_TYPE:
             self.feat_dim = 512
+        elif 'dinov3' in cfg.MODEL.TRANSFORMER_TYPE:
+            self.feat_dim = 768
         
         self.num_classes = num_classes
         self.cfg = cfg

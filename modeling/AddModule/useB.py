@@ -31,8 +31,8 @@ class AlignmentM(nn.Module):
         self.h,self.w = H,W
         self.mse = nn.MSELoss()
         n_heads = 1  
-        n_head_channels = 512 
-        n_groups = 1 
+        n_head_channels = feat_dim  # 512 (CLIP) or 768 (DINOv3)
+        n_groups = 1
         stride = 4  
         offset_range_factor = 2  
         ksize = 4  

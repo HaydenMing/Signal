@@ -3,6 +3,7 @@ import torch.nn as nn
 from timm.models.layers import trunc_normal_
 from modeling.make_model_clipreid import load_clip_to_cpu
 from modeling.clip.LoRA import mark_only_lora_as_trainable as lora_train
+from modeling.dinov3_encoder import DINOv3Encoder
 from utils.volume import volume_computation3
 import torch.nn.functional as F
 
@@ -90,26 +91,56 @@ class build_transformer(nn.Module):
                 trunc_normal_(self.cv_embed, std=.02)
                 print('camera number is : {}'.format(view_num))
 
+        elif cfg.MODEL.TRANSFORMER_TYPE == 'dinov3_vitb16':
+            self.clip = 2   # flag for DINOv3
+            self.sie_xishu = cfg.MODEL.SIE_COE
+            pretrained_path = getattr(cfg.MODEL, 'DINOV3_PRETRAIN_PATH', None)
+            self.base = DINOv3Encoder(pretrained_path=pretrained_path)
+            self.base.backbone.to("cuda")
+            print('Loading pretrained model from DINOv3 ViT-B/16')
+
+            if cfg.MODEL.SIE_CAMERA and cfg.MODEL.SIE_VIEW:
+                self.cv_embed = nn.Parameter(torch.zeros(camera_num * view_num, 1, 768))
+                trunc_normal_(self.cv_embed, std=.02)
+                print('camera number is : {}'.format(camera_num))
+            elif cfg.MODEL.SIE_CAMERA:
+                self.cv_embed = nn.Parameter(torch.zeros(camera_num, 1, 768))
+                trunc_normal_(self.cv_embed, std=.02)
+                print('camera number is : {}'.format(camera_num))
+            elif cfg.MODEL.SIE_VIEW:
+                self.cv_embed = nn.Parameter(torch.zeros(view_num, 1, 768))
+                trunc_normal_(self.cv_embed, std=.02)
+                print('camera number is : {}'.format(view_num))
+
         self.num_classes = num_classes
         self.ID_LOSS_TYPE = cfg.MODEL.ID_LOSS_TYPE
 
     def forward(self, x, label=None, cam_label=None, view_label=None, modality=None):
-        # print("输入Transformers Encoders的x：",x.shape) [64,3,256,128]
         if self.clip == 0:
+            # ImageNet ViT
             x = self.base(x, cam_label=cam_label, view_label=view_label)
-        else:
+            global_feat = x[:, 0]
+            x_cash = x[:, 1:]
+        elif self.clip == 2:
+            # DINOv3: returns (patch_tokens, cls_token) directly
             if self.cv_embed_sign:
                 cam_label = cam_label.to(self.cv_embed.device)
                 cv_embed = self.sie_xishu * self.cv_embed[cam_label]
             else:
                 cv_embed = None
+            x_cash, global_feat = self.base(x, cv_embed=cv_embed)
+        else:
+            # CLIP ViT
+            if self.cv_embed_sign:
+                cam_label = cam_label.to(self.cv_embed.device)
+                cv_embed = self.sie_xishu * self.cv_embed[cam_label]
+            else:
+                cv_embed = None
+            x = self.base(x, cv_embed, modality)
+            global_feat = x[:, 0]
+            x_cash = x[:, 1:]
 
-            x = self.base(x, cv_embed, modality) 
-        global_feat = x[:, 0]
-        x_cash = x[:, 1:]
-
-        # print("输出的x和global_feat：",x.shape,global_feat.shape) # [64,128,512],[64,512]
-        return x_cash,global_feat
+        return x_cash, global_feat
 
     def load_param(self, trained_path):
         param_dict = torch.load(trained_path)
