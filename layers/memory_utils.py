@@ -41,7 +41,7 @@ def extract_multimodal_features(model, dataloader, device='cuda'):
                 'NI':  img['NI'].to(device),
                 'TI':  img['TI'].to(device),
             }
-            target = pid.to(device)
+            target = torch.tensor(pid, dtype=torch.long).to(device)
             camid = camid.to(device)
             view_label = target_view.to(device)
 
