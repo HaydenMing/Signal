@@ -19,6 +19,8 @@ class Signal(nn.Module):
         super(Signal, self).__init__()
         if 'vit_base_patch16_224' in cfg.MODEL.TRANSFORMER_TYPE:
             self.feat_dim = 768
+        elif 'dinov3' in cfg.MODEL.TRANSFORMER_TYPE:
+            self.feat_dim = 768
         elif 'ViT-B-16' in cfg.MODEL.TRANSFORMER_TYPE:
             self.feat_dim = 512
         

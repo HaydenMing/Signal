@@ -1,5 +1,6 @@
 MODEL:
-  TRANSFORMER_TYPE: 'ViT-B-16'
+  TRANSFORMER_TYPE: 'ViT-B-16'             # CLIP backbone; change to 'dinov3_vitb16' for DINOv3
+  # DINOV3_PRETRAIN_PATH: ''                # needed if TRANSFORMER_TYPE is dinov3_vitb16
   STRIDE_SIZE: [ 16, 16 ]
   SIE_CAMERA: True
   DIRECT: 1

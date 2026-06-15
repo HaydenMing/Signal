@@ -13,6 +13,8 @@ _C.MODEL.DEVICE_ID = '0'
 _C.MODEL.NAME = 'Signal'
 # Path to pretrained model of backbone
 _C.MODEL.PRETRAIN_PATH_T = '/path/to/your/vitb_16_224_21k.pth'
+# Path to DINOv3 pretrained weights (used when TRANSFORMER_TYPE is dinov3_vitb16)
+_C.MODEL.DINOV3_PRETRAIN_PATH = ''
 # Use ImageNet pretrained model to initialize backbone or use self trained model to initialize the whole model
 # Options: 'imagenet' or 'self'
 
