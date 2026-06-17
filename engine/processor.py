@@ -95,6 +95,7 @@ def do_train(cfg,
             mmc_memory.set_features(rgb_feats, ni_feats, ti_feats, mem_labels, device=device)
             logger.info(f'MMC memory bank created: {mmc_memory.memory_rgb.features.shape[0]} proxies '
                         f'for {mem_num_classes} classes')
+            model.train()  # restore training mode after feature extraction
 
         for n_iter, (img, vid, target_cam, target_view, _) in enumerate(train_loader):
             

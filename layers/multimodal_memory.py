@@ -115,6 +115,8 @@ class ClusterMemoryAMP(nn.Module, ABC):
             scalar loss
         """
         inputs = F.normalize(inputs, dim=1)
+        if self.features is not None and self.features.dtype != inputs.dtype:
+            inputs = inputs.to(self.features.dtype)
 
         if update_memory:
             outputs = cm_mix(inputs, targets, self.features, self.momentum)

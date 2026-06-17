@@ -19,7 +19,7 @@ def set_seed(seed):
     np.random.seed(seed)
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = True
+    torch.backends.cudnn.benchmark = False
 
 if __name__ == '__main__':
 
@@ -30,9 +30,13 @@ if __name__ == '__main__':
     parser.add_argument("--fea_cft", default=0, help="Feature choose to be tested", type=int)
     parser.add_argument("opts", help="Modify config options using the command-line", default=None,
                         nargs=argparse.REMAINDER)
-    parser.add_argument("--local_rank", default=0, type=int)
+    parser.add_argument("--local_rank", "--local-rank", default=0, type=int, dest="local_rank")
     
     args = parser.parse_args()
+
+    # torchrun compatibility: prefer env var if set
+    if 'LOCAL_RANK' in os.environ:
+        args.local_rank = int(os.environ['LOCAL_RANK'])
 
     if args.config_file != "":
         cfg.merge_from_file(args.config_file)
@@ -45,7 +49,6 @@ if __name__ == '__main__':
 
     if cfg.MODEL.DIST_TRAIN:
         torch.distributed.init_process_group(backend='nccl', init_method='env://')
-        os.environ['CUDA_VISIBLE_DEVICES'] = cfg.MODEL.DEVICE_ID  
 
     new_output_dir = os.path.join(cfg.OUTPUT_DIR, cfg.ckpt_save_path)
     if not os.path.exists(new_output_dir):
