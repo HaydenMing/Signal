@@ -13,9 +13,10 @@ MODEL:
   TOPK: 80
   USE_B: True
   USE_MMC: True              # ← enable multi-modal memory collaboration
-  MEMORY_MOMENTUM: 0.2
+  MEMORY_MOMENTUM: 0.5       # 0.5 more stable than 0.2 (CLIMB-ReID recommendation)
   MEMORY_TEMP: 0.05
   MMC_LOSS_WEIGHT: 1.0
+  MMC_REDUCE_TRIPLET: False   # set True to let MMC replace triplet loss (like CLIMB-ReID)
   stageName: 'together_CLS_Patch'     # [CLS,  together_CLS_Patch]
   
   

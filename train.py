@@ -42,6 +42,12 @@ if __name__ == '__main__':
         cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
     cfg.TEST.FEAT = args.fea_cft
+
+    # MMC-Triplet redundancy fix: CLIMB-ReID uses memory loss to REPLACE triplet loss
+    if cfg.MODEL.USE_MMC and cfg.MODEL.MMC_REDUCE_TRIPLET:
+        cfg.MODEL.TRIPLET_LOSS_WEIGHT = 0.0
+        print('MMC_REDUCE_TRIPLET: Triplet loss weight set to 0 (MMC replaces triplet)')
+
     cfg.freeze()
 
     set_seed(cfg.SOLVER.SEED)
