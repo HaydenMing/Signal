@@ -58,6 +58,7 @@ _C.MODEL.USE_MMC = False          # whether to use multi-modal memory bank
 _C.MODEL.MMC_LOSS_WEIGHT = 1.0    # weight of MMC loss
 _C.MODEL.MEMORY_MOMENTUM = 0.2    # momentum for memory update
 _C.MODEL.MEMORY_TEMP = 0.05       # temperature for contrastive memory loss
+_C.MODEL.MMC_INTRA_ONLY = False  # if True, use intra-modal memory only (no cross-modal)
 
 
 # -----------------------------------------------------------------------------

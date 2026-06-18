@@ -37,6 +37,7 @@ def do_train(cfg,
     memory_momentum = cfg.MODEL.MEMORY_MOMENTUM
     memory_temp = cfg.MODEL.MEMORY_TEMP
     use_mmc = cfg.MODEL.USE_MMC
+    mmc_intra_only = cfg.MODEL.MMC_INTRA_ONLY
 
     device = torch.device(f"cuda:{local_rank}" if torch.cuda.is_available() else "cpu")
     epochs = cfg.SOLVER.MAX_EPOCHS
@@ -91,6 +92,7 @@ def do_train(cfg,
                 feat_dim=feat_dim_for_mem,
                 temp=memory_temp,
                 momentum=memory_momentum,
+                intra_only=mmc_intra_only,
             )
             mmc_memory.set_features(rgb_feats, ni_feats, ti_feats, mem_labels, device=device)
             logger.info(f'MMC memory bank created: {mmc_memory.memory_rgb.features.shape[0]} proxies '

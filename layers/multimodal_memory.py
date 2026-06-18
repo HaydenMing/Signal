@@ -147,10 +147,11 @@ class MultiModalClusterMemory(nn.Module):
                + (L_cross_rgb→ni + L_cross_rgb→ti + ... ) / 6
     """
 
-    def __init__(self, num_classes, feat_dim, temp=0.05, momentum=0.2):
+    def __init__(self, num_classes, feat_dim, temp=0.05, momentum=0.2, intra_only=False):
         super().__init__()
         self.num_classes = num_classes
         self.feat_dim = feat_dim
+        self.intra_only = intra_only
 
         self.memory_rgb = ClusterMemoryAMP(temp=temp, momentum=momentum)
         self.memory_ni  = ClusterMemoryAMP(temp=temp, momentum=momentum)
@@ -212,7 +213,10 @@ class MultiModalClusterMemory(nn.Module):
                       loss_cross_ni_rgb + loss_cross_ni_ti +
                       loss_cross_ti_rgb + loss_cross_ti_ni) / 6.0
 
-        loss_total = loss_intra + loss_cross
+        if self.intra_only:
+            loss_total = loss_intra
+        else:
+            loss_total = loss_intra + loss_cross
         return loss_intra, loss_cross, loss_total
 
 
