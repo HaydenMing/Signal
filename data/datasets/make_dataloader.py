@@ -183,20 +183,30 @@ def val_collate_fn(batch):
 
 
 def make_dataloader(cfg):
+    # DINOv3 预训练用的是 ImageNet 归一化, 必须对齐, 否则自监督特征会失真;
+    # CLIP / ImageNet-ViT 沿用配置中的 0.5/0.5
+    if cfg.MODEL.TRANSFORMER_TYPE == 'dinov3_vitb16':
+        pixel_mean = [0.485, 0.456, 0.406]
+        pixel_std = [0.229, 0.224, 0.225]
+        print('Using ImageNet normalization for DINOv3 backbone: mean={}, std={}'.format(pixel_mean, pixel_std))
+    else:
+        pixel_mean = cfg.INPUT.PIXEL_MEAN
+        pixel_std = cfg.INPUT.PIXEL_STD
+
     train_transforms = T.Compose([
         T.Resize(cfg.INPUT.SIZE_TRAIN, interpolation=3),
         T.RandomHorizontalFlip(p=cfg.INPUT.PROB),
         T.Pad(cfg.INPUT.PADDING),
         T.RandomCrop(cfg.INPUT.SIZE_TRAIN),
         T.ToTensor(),
-        T.Normalize(mean=cfg.INPUT.PIXEL_MEAN, std=cfg.INPUT.PIXEL_STD),
+        T.Normalize(mean=pixel_mean, std=pixel_std),
         RandomErasing(probability=cfg.INPUT.RE_PROB, mode='pixel', max_count=1, device='cpu'),
     ])
 
     val_transforms = T.Compose([
         T.Resize(cfg.INPUT.SIZE_TEST),
         T.ToTensor(),
-        T.Normalize(mean=cfg.INPUT.PIXEL_MEAN, std=cfg.INPUT.PIXEL_STD)
+        T.Normalize(mean=pixel_mean, std=pixel_std)
     ])
 
     num_workers = cfg.DATALOADER.NUM_WORKERS
