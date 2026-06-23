@@ -147,6 +147,8 @@ _C.SOLVER.WARMUP_METHOD = "linear"
 _C.SOLVER.COSINE_MARGIN = 0.5
 _C.SOLVER.COSINE_SCALE = 30
 _C.SOLVER.SEED = 1234
+# Cosine scheduler noise (0.67 = ±67% perturbation; set to 0 to disable noise)
+_C.SOLVER.SCHEDULER_NOISE = True
 _C.MODEL.NO_MARGIN = True
 # epoch number of saving checkpoints
 _C.SOLVER.CHECKPOINT_PERIOD = 50

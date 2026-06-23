@@ -10,8 +10,16 @@ def create_scheduler(cfg, optimizer):
     warmup_lr_init = 0.1 * cfg.SOLVER.BASE_LR
 
     warmup_t = cfg.SOLVER.WARMUP_ITERS
-    noise_range = (0, num_epochs)
 
+    # noise control: SCHEDULER_NOISE=False disables the ±67% lr perturbation entirely
+    use_noise = getattr(cfg.SOLVER, 'SCHEDULER_NOISE', True)
+    if use_noise:
+        noise_range = (0, num_epochs)
+        noise_pct = 0.67
+    else:
+        noise_range = None
+        noise_pct = 0.0
+        print('Cosine scheduler noise DISABLED (SCHEDULER_NOISE=False)')
 
     lr_scheduler = CosineLRScheduler(
         optimizer,
@@ -24,7 +32,7 @@ def create_scheduler(cfg, optimizer):
         cycle_limit=1,
         t_in_epochs=True,
         noise_range_t=noise_range,
-        noise_pct=0.67,
+        noise_pct=noise_pct,
         noise_std=1.,
         noise_seed=42,
     )
